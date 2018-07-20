@@ -393,6 +393,7 @@ class NgSpiceShared:
 
         self._get_vsrc_data_c = ffi.callback('int (double *, double, char *, int, void *)', self._get_vsrc_data)
         self._get_isrc_data_c = ffi.callback('int (double *, double, char *, int, void *)', self._get_isrc_data)
+        self._get_sync_data_c = ffi.callback('int (double, double *, double, int, int, int, void *)',self._get_sync_data)
 
         self_c = ffi.new_handle(self)
         self._self_c = self_c # To prevent garbage collection
@@ -411,7 +412,7 @@ class NgSpiceShared:
         self._ngspice_id = ngspice_id_c # To prevent garbage collection
         rc = self._ngspice_shared.ngSpice_Init_Sync(self._get_vsrc_data_c,
                                                     self._get_isrc_data_c,
-                                                    ffi.NULL, # GetSyncData
+                                                    self._get_sync_data_c, # GetSyncData was ffi.NULL
                                                     ngspice_id_c,
                                                     self_c)
         if rc:
@@ -530,6 +531,14 @@ class NgSpiceShared:
         return self.get_isrc_data(current, time, ffi_string_utf8(node), ngspice_id)
 
     ##############################################
+    
+    @staticmethod
+    def _get_sync_data(time, deltatime, olddelta, ngspice_id, id_number, user_data):
+        """FFI Callback"""
+        self = ffi.from_handle(user_data)
+        return self.get_sync_data(time, deltatime, olddelta, ngspice_id, id_number, user_data)
+
+    ##############################################
 
     def send_char(self, message, ngspice_id):
         """ Reimplement this callback in a subclass to process logging messages from the simulator. """
@@ -567,6 +576,13 @@ class NgSpiceShared:
     def get_isrc_data(self, current, time, node, ngspice_id):
         """ Reimplement this callback in a subclass to provide external current source. """
         self._logger.debug('ngspice_id-{} get_isrc_data @{} node {}'.format(ngspice_id, time, node))
+        return 0
+
+    ##############################################
+
+    def get_sync_data(time, deltatime, olddelta, ngspice_id, id_number, user_data):
+        """ Reimplement this callback in a subclass to provide external current source. """
+        self._logger.debug('ngspice_id-{} get_sync_data @{} olddelta {}'.format(ngspice_id, time, olddelta))
         return 0
 
     ##############################################

@@ -37,8 +37,8 @@ root:
 
 # loggers:
 
-#   PySpice:
+PySpice:
 #     level: DEBUG
-#     #level: INFO
+      level: INFO
 #     #level: WARNING
 #     handlers: [console]

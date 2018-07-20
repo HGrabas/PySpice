@@ -1043,7 +1043,29 @@ class NonLinearCurrentSource(DipoleElement):
     __alias__ = 'NonLinearCurrentSource'
     __prefix__ = 'G'
 
-    transconductance = ExpressionPositionalParameter(position=0, key_parameter=False)
+    #transconductance = ExpressionPositionalParameter(position=0, key_parameter=False)
+    
+    ##############################################
+
+    def __init__(self, name, *args, **kwargs):
+
+        super().__init__(name, *args, **kwargs)
+
+        self.expression = kwargs.get('expression', None)
+        self.table = kwargs.get('table', None)
+
+    ##############################################
+
+    def __str__(self):
+
+        spice_element = self.format_node_names()
+        # Fixme: expression
+        if self.table is not None:
+            # TABLE {expression} = (x0, y0) (x1, y1) ...
+            table = ['({}, {})'.format(str_spice(x), str_spice(y)) for x, y in self.table]
+            spice_element += ' TABLE {%s} = %s' % (self.expression, join_list(table))
+        return spice_element
+    
 
 ####################################################################################################
 #
